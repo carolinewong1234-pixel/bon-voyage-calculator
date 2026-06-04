@@ -4,233 +4,185 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bon Voyage — Settlement Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --night: #080d1e;
-    --deep: #0d1535;
-    --gold: #e8d07a;
-    --gold-dim: #a8902a;
-    --white: #f8faff;
-    --muted: #8898cc;
-    --green: #1D9E75;
-    --green-bg: #0d2a1a;
-    --red: #E24B4A;
-    --red-bg: #2a0d0d;
+    --bg: #ffffff;
+    --bg2: #f7f6f3;
+    --bg3: #f1f1ef;
+    --border: #e8e6e1;
+    --text: #37352f;
+    --text2: #787774;
+    --text3: #9b9a97;
+    --gold: #b8860b;
     --purple: #7F77DD;
-    --purple-bg: #1a1540;
-    --border: rgba(232,208,122,0.15);
-    --card-bg: rgba(13,21,53,0.8);
+    --purple-bg: #EEEDFE;
+    --purple-text: #3C3489;
+    --green: #1D9E75;
+    --green-bg: #EAF3DE;
+    --green-text: #27500A;
+    --red: #E24B4A;
+    --red-bg: #FCEBEB;
+    --red-text: #A32D2D;
+    --amber: #BA7517;
+    --amber-bg: #FAEEDA;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--night);
-    color: var(--white);
-    min-height: 100vh;
-    padding: 0;
-    position: relative;
-    overflow-x: hidden;
+    font-family: 'DM Sans', ui-sans-serif, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px 20px 40px;
+    font-size: 14px;
   }
-  /* Star background */
-  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-  .star { position: absolute; background: white; border-radius: 50%; animation: twinkle var(--d, 3s) infinite var(--delay, 0s); }
-  @keyframes twinkle { 0%,100%{opacity:var(--min-op,0.3)} 50%{opacity:var(--max-op,1)} }
 
-  .container { max-width: 680px; margin: 0 auto; padding: 32px 20px 60px; position: relative; z-index: 1; }
+  .header { margin-bottom: 20px; }
+  .brand { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .title { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--text); margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .divider { height: 0.5px; background: var(--border); margin: 16px 0; }
 
-  /* Header */
-  .header { text-align: center; margin-bottom: 40px; }
-  .brand { font-size: 12px; font-weight: 500; color: var(--gold); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px; }
-  .title { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--white); margin-bottom: 8px; line-height: 1.2; }
-  .subtitle { font-size: 14px; color: var(--muted); line-height: 1.6; }
-  .divider { width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 20px auto; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
 
-  /* Cards */
-  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 16px; backdrop-filter: blur(10px); }
-  .card-title { font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .card-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .travelers-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .field-wrap { }
+  .field-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
 
-  /* Travelers */
-  .travelers-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .field-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
   input[type=text], input[type=number], select {
     width: 100%;
-    background: rgba(8,13,30,0.8);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--white);
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
-    padding: 9px 12px;
+    padding: 7px 10px;
     outline: none;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
-  input:focus, select:focus { border-color: var(--gold); }
-  input::placeholder { color: rgba(136,152,204,0.5); }
-  select option { background: #0d1535; color: var(--white); }
+  input:focus, select:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 2px rgba(127,119,221,0.12);
+  }
+  input::placeholder { color: var(--text3); }
+  select { cursor: pointer; }
 
-  /* Expense rows */
-  .expense-header { display: grid; grid-template-columns: 2fr 100px 1fr 1fr 32px; gap: 8px; margin-bottom: 8px; }
-  .expense-header span { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
-  .expense-row { display: grid; grid-template-columns: 2fr 100px 1fr 1fr 32px; gap: 8px; margin-bottom: 8px; align-items: center; animation: slideIn 0.2s ease; }
-  @keyframes slideIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+  .expense-header { display: grid; grid-template-columns: 2fr 90px 1fr 1fr 28px; gap: 6px; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 0.5px solid var(--border); }
+  .expense-header span { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+  .expense-row { display: grid; grid-template-columns: 2fr 90px 1fr 1fr 28px; gap: 6px; margin-bottom: 6px; align-items: center; }
+
   .del-btn {
-    width: 32px; height: 32px; border-radius: 7px; border: 1px solid rgba(226,75,74,0.3);
-    background: var(--red-bg); color: var(--red); font-size: 16px; cursor: pointer;
+    width: 28px; height: 28px; border-radius: 5px; border: 0.5px solid var(--border);
+    background: var(--bg2); color: var(--text3); font-size: 14px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0;
   }
-  .del-btn:hover { background: rgba(226,75,74,0.2); border-color: var(--red); }
+  .del-btn:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
 
   .add-btn {
     font-size: 12px; font-weight: 500; color: var(--green); background: var(--green-bg);
-    border: 1px solid rgba(29,158,117,0.3); border-radius: 8px; padding: 8px 16px;
-    cursor: pointer; transition: all 0.15s; margin-top: 4px;
+    border: 0.5px solid #c8e0b8; border-radius: 6px; padding: 6px 14px;
+    cursor: pointer; transition: all 0.15s; margin-top: 8px; display: inline-block;
   }
-  .add-btn:hover { border-color: var(--green); background: rgba(29,158,117,0.15); }
+  .add-btn:hover { border-color: var(--green); }
 
-  /* Calculate button */
   .calc-btn {
-    width: 100%; padding: 14px; margin: 20px 0;
-    background: linear-gradient(135deg, #534AB7, var(--purple));
-    border: none; border-radius: 12px; color: white;
-    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em;
-    box-shadow: 0 4px 20px rgba(127,119,221,0.3);
+    width: 100%; padding: 11px; margin: 18px 0 0;
+    background: var(--purple);
+    border: none; border-radius: 8px; color: white;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
   }
-  .calc-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 25px rgba(127,119,221,0.4); }
-  .calc-btn:active { transform: translateY(0); }
-  .calc-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .calc-btn:hover { background: #6b63c4; }
 
-  /* Results */
-  .result { display: none; }
-  .result.visible { display: block; animation: fadeIn 0.4s ease; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .result { display: none; margin-top: 20px; }
+  .result.visible { display: block; }
 
-  .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
-  .stat-box { background: rgba(8,13,30,0.6); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
-  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-  .stat-value { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--white); }
+  .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
+  .stat-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; font-weight: 500; }
+  .stat-value { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); }
 
-  .person-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .card { border: 0.5px solid var(--border); border-radius: 8px; padding: 0 14px; margin-bottom: 12px; }
+  .person-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
   .person-row:last-child { border-bottom: none; }
-  .person-name { font-weight: 600; font-size: 14px; }
-  .person-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .balance-tag { font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
-  .balance-pos { background: var(--green-bg); color: var(--green); border: 1px solid rgba(29,158,117,0.3); }
-  .balance-neg { background: var(--red-bg); color: var(--red); border: 1px solid rgba(226,75,74,0.3); }
-  .balance-zero { background: rgba(136,152,204,0.1); color: var(--muted); }
+  .person-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .person-detail { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .balance-tag { font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+  .balance-pos { background: var(--green-bg); color: var(--green-text); }
+  .balance-neg { background: var(--red-bg); color: var(--red-text); }
+  .balance-zero { background: var(--bg2); color: var(--text3); }
 
-  .settlement-card { background: linear-gradient(135deg, rgba(83,74,183,0.2), rgba(127,119,221,0.1)); border: 1px solid rgba(127,119,221,0.3); border-radius: 12px; padding: 18px; margin: 16px 0; }
-  .settlement-title { font-size: 11px; font-weight: 600; color: var(--purple); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px; }
-  .settlement-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+  .settlement-box { background: var(--purple-bg); border: 0.5px solid rgba(127,119,221,0.3); border-radius: 8px; padding: 14px; margin: 12px 0; }
+  .settlement-title { font-size: 11px; font-weight: 600; color: var(--purple-text); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+  .settlement-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; }
   .settlement-item:last-child { margin-bottom: 0; }
-  .s-from, .s-to { font-weight: 600; color: var(--white); }
-  .s-arrow { color: var(--muted); }
-  .s-amount { background: var(--purple); color: white; padding: 3px 12px; border-radius: 20px; font-weight: 600; font-size: 13px; margin-left: auto; }
-  .even-msg { color: var(--green); font-size: 14px; font-weight: 500; }
+  .s-from, .s-to { font-weight: 600; color: var(--text); }
+  .s-arrow { color: var(--text3); }
+  .s-amount { background: var(--purple); color: white; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: auto; }
+  .even-msg { font-size: 13px; color: var(--green-text); font-weight: 500; }
 
-  .cat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .cat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
   .cat-row:last-child { border-bottom: none; }
-  .cat-name { font-size: 13px; flex: 1; }
-  .cat-bar-bg { width: 80px; height: 4px; background: rgba(136,152,204,0.2); border-radius: 2px; overflow: hidden; }
-  .cat-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #534AB7, var(--purple)); }
-  .cat-amount { font-size: 13px; font-weight: 600; color: var(--gold); min-width: 55px; text-align: right; }
+  .cat-name { font-size: 12px; flex: 1; color: var(--text); }
+  .cat-bar-bg { width: 70px; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .cat-bar-fill { height: 100%; border-radius: 2px; background: var(--purple); }
+  .cat-amount { font-size: 12px; font-weight: 600; color: var(--text); min-width: 50px; text-align: right; }
 
-  .section-label { font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; margin: 20px 0 12px; display: flex; align-items: center; gap: 8px; }
-  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  .footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--text3); }
 
-  .footer { text-align: center; margin-top: 40px; font-size: 11px; color: rgba(136,152,204,0.5); }
-  .footer span { color: var(--gold-dim); }
-
-  @media (max-width: 500px) {
+  @media (max-width: 480px) {
     .travelers-grid { grid-template-columns: 1fr 1fr; }
-    .expense-header, .expense-row { grid-template-columns: 1fr 80px 1fr 32px; }
-    .expense-header span:nth-child(4), .expense-row select:nth-child(4) { display: none; }
-    .stat-grid { grid-template-columns: 1fr 1fr; }
-    .stat-grid .stat-box:last-child { grid-column: span 2; }
+    .expense-header, .expense-row { grid-template-columns: 1.5fr 80px 1fr 28px; }
+    .expense-header span:nth-child(4), .expense-row select:last-of-type { display: none; }
   }
 </style>
 </head>
 <body>
 
-<!-- Stars -->
-<div class="stars" id="stars"></div>
+<div class="header">
+  <div class="brand">Bon Voyage</div>
+  <h1 class="title">Settlement Calculator</h1>
+  <p class="subtitle">Log expenses below — instantly see who owes who. No math required.</p>
+</div>
+<div class="divider"></div>
 
-<div class="container">
-  <div class="header">
-    <div class="brand">Bon Voyage</div>
-    <h1 class="title">Settlement Calculator</h1>
-    <div class="divider"></div>
-    <p class="subtitle">Add your trip expenses and instantly see who owes who — no math required.</p>
-  </div>
-
-  <!-- Travelers -->
-  <div class="card">
-    <div class="card-title">Travelers</div>
-    <div class="travelers-grid">
-      <div>
-        <div class="field-label">Traveler 1</div>
-        <input type="text" id="t1" value="Marie-Lou" placeholder="Name">
-      </div>
-      <div>
-        <div class="field-label">Traveler 2</div>
-        <input type="text" id="t2" value="Jean-Félix" placeholder="Name">
-      </div>
-      <div>
-        <div class="field-label">Traveler 3 (optional)</div>
-        <input type="text" id="t3" value="" placeholder="Name">
-      </div>
-    </div>
-  </div>
-
-  <!-- Expenses -->
-  <div class="card">
-    <div class="card-title">Expenses</div>
-    <div class="expense-header">
-      <span>Description</span><span>Amount</span><span>Paid by</span><span>Category</span><span></span>
-    </div>
-    <div id="expense-list"></div>
-    <button class="add-btn" onclick="addRow()">+ Add expense</button>
-  </div>
-
-  <button class="calc-btn" onclick="calculate()">⚡ Calculate settlement</button>
-
-  <!-- Results -->
-  <div class="result" id="result">
-    <div class="stat-grid" id="stat-grid"></div>
-
-    <div class="section-label">Per person</div>
-    <div class="card" style="padding:8px 16px;">
-      <div id="person-breakdown"></div>
-    </div>
-
-    <div class="settlement-card">
-      <div class="settlement-title">Who pays who</div>
-      <div id="settlement-items"></div>
-    </div>
-
-    <div class="section-label">By category</div>
-    <div class="card" style="padding:8px 16px;">
-      <div id="category-list"></div>
-    </div>
-  </div>
-
-  <div class="footer">Made with ✦ by <span>Bon Voyage</span> · Plan it together. Remember it forever.</div>
+<div class="section-label">Travelers</div>
+<div class="travelers-grid">
+  <div class="field-wrap"><div class="field-label">Traveler 1</div><input type="text" id="t1" value="Marie-Lou" placeholder="Name"></div>
+  <div class="field-wrap"><div class="field-label">Traveler 2</div><input type="text" id="t2" value="Jean-Félix" placeholder="Name"></div>
+  <div class="field-wrap"><div class="field-label">Traveler 3 (optional)</div><input type="text" id="t3" value="" placeholder="Name"></div>
 </div>
 
-<script>
-// Stars
-const starsEl = document.getElementById('stars');
-for(let i=0;i<120;i++){
-  const s=document.createElement('div');
-  s.className='star';
-  const size=Math.random()<0.7?1:Math.random()<0.8?1.5:2;
-  s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;--min-op:${0.1+Math.random()*0.3};--max-op:${0.6+Math.random()*0.4}`;
-  starsEl.appendChild(s);
-}
+<div class="divider"></div>
+<div class="section-label">Expenses</div>
+<div class="expense-header">
+  <span>Description</span><span>Amount $</span><span>Paid by</span><span>Category</span><span></span>
+</div>
+<div id="expense-list"></div>
+<button class="add-btn" onclick="addRow()">+ Add expense</button>
 
+<button class="calc-btn" onclick="calculate()">⚡ Calculate settlement</button>
+
+<div class="result" id="result">
+  <div class="divider"></div>
+  <div class="section-label">Summary</div>
+  <div class="stat-grid" id="stat-grid"></div>
+
+  <div class="section-label">Per person</div>
+  <div class="card"><div id="person-breakdown"></div></div>
+
+  <div class="settlement-box">
+    <div class="settlement-title">Who pays who</div>
+    <div id="settlement-items"></div>
+  </div>
+
+  <div class="section-label">By category</div>
+  <div class="card"><div id="category-list"></div></div>
+</div>
+
+<div class="footer">Bon Voyage · Plan it together. Remember it forever.</div>
+
+<script>
 let rowId=1;
 const categories=['🚇 Transport','🏨 Lodging','🍜 Food','🎟 Activities','🛍 Shopping','🏥 Health','📦 Misc'];
 const sampleData=[
@@ -244,15 +196,6 @@ function getTravelers(){
   return ['t1','t2','t3'].map(id=>document.getElementById(id).value.trim()).filter(t=>t);
 }
 
-function makeSelectOptions(sel, selected){
-  const travelers=getTravelers();
-  return `<select>${travelers.map(t=>`<option${t===selected?' selected':''}>${t}</option>`).join('')}</select>`;
-}
-
-function makeCatOptions(selected){
-  return `<select>${categories.map(c=>`<option${c===selected?' selected':''}>${c}</option>`).join('')}</select>`;
-}
-
 function addRow(data={}){
   const travelers=getTravelers();
   const div=document.createElement('div');
@@ -260,21 +203,20 @@ function addRow(data={}){
   div.innerHTML=`
     <input type="text" placeholder="e.g. 🍜 Dinner" value="${data.name||''}">
     <input type="number" placeholder="0.00" value="${data.amount||''}" min="0" step="0.01">
-    ${makeSelectOptions(null, data.paidBy||travelers[0])}
-    ${makeCatOptions(data.cat||categories[0])}
-    <button class="del-btn" onclick="this.closest('.expense-row').remove()">×</button>`;
+    <select>${travelers.map(t=>`<option${t===(data.paidBy||travelers[0])?' selected':''}>${t}</option>`).join('')}</select>
+    <select>${categories.map(c=>`<option${c===(data.cat||categories[0])?' selected':''}>${c}</option>`).join('')}</select>
+    <button class="del-btn" onclick="if(document.querySelectorAll('.expense-row').length>1)this.closest('.expense-row').remove()">×</button>`;
   document.getElementById('expense-list').appendChild(div);
 }
 
 function updateSelects(){
+  const travelers=getTravelers();
   document.querySelectorAll('#expense-list .expense-row').forEach(row=>{
     const sel=row.querySelectorAll('select')[0];
     const cur=sel.value;
-    const travelers=getTravelers();
     sel.innerHTML=travelers.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('');
   });
 }
-
 ['t1','t2','t3'].forEach(id=>document.getElementById(id).addEventListener('input',updateSelects));
 
 function calculate(){
@@ -301,7 +243,6 @@ function calculate(){
   const balance={};
   travelers.forEach(t=>{balance[t]=(paid[t]||0)-share;});
 
-  // Settlements
   const settlements=[];
   const pos=travelers.filter(t=>balance[t]>0.005).map(t=>({name:t,amt:balance[t]}));
   const neg=travelers.filter(t=>balance[t]<-0.005).map(t=>({name:t,amt:-balance[t]}));
@@ -309,11 +250,10 @@ function calculate(){
   while(i<pos.length&&j<neg.length){
     const tr=Math.min(pos[i].amt,neg[j].amt);
     if(tr>0.005)settlements.push({from:neg[j].name,to:pos[i].name,amount:tr});
-    pos[i].amt-=tr; neg[j].amt-=tr;
-    if(pos[i].amt<0.005)i++; if(neg[j].amt<0.005)j++;
+    pos[i].amt-=tr;neg[j].amt-=tr;
+    if(pos[i].amt<0.005)i++;if(neg[j].amt<0.005)j++;
   }
 
-  // Categories
   const cats={};
   expenses.forEach(e=>{cats[e.category]=(cats[e.category]||0)+e.amount;});
   const maxCat=Math.max(...Object.values(cats));
@@ -326,7 +266,7 @@ function calculate(){
   document.getElementById('person-breakdown').innerHTML=travelers.map(t=>{
     const b=balance[t];
     const cls=b>0.005?'balance-pos':b<-0.005?'balance-neg':'balance-zero';
-    const label=b>0.005?`Gets back $${b.toFixed(2)}`:b<-0.005?`Owes $${Math.abs(b).toFixed(2)}`:'Even';
+    const label=b>0.005?`Gets back $${b.toFixed(2)}`:b<-0.005?`Owes $${Math.abs(b).toFixed(2)}`:'Even ✓';
     return `<div class="person-row">
       <div><div class="person-name">${t}</div><div class="person-detail">Paid $${(paid[t]||0).toFixed(2)} · Share $${share.toFixed(2)}</div></div>
       <div class="balance-tag ${cls}">${label}</div>
@@ -345,7 +285,6 @@ function calculate(){
   document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// Init with sample data
 sampleData.forEach(d=>addRow(d));
 </script>
 </body>
