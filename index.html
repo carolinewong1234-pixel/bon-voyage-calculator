@@ -96,6 +96,17 @@
   .reset-btn{width:100%;padding:8px;background:none;border:.5px solid var(--border);border-radius:7px;color:var(--text2);font-family:inherit;font-size:13px;cursor:pointer;margin-top:4px;}
   .reset-btn:hover{border-color:var(--text2);}
   .footer{text-align:center;margin-top:20px;font-size:11px;color:var(--text3);}
+  .snapshot-btn{width:100%;padding:10px;background:var(--amber-bg);border:.5px solid rgba(186,117,23,.4);border-radius:8px;color:var(--amber);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px;transition:all .15s;}
+  .snapshot-btn:hover{border-color:var(--amber);background:#f5e8c8;}
+  .snapshot-btn.copied{background:var(--green-bg);color:var(--green-text);border-color:#c8e0b8;}
+  .autosave-bar{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);margin-bottom:12px;padding:6px 10px;background:var(--bg2);border-radius:6px;border:.5px solid var(--border);}
+  .save-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .snapshot-box{display:none;border:.5px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;}
+  .snapshot-box.visible{display:block;}
+  .snapshot-head{background:var(--amber-bg);padding:8px 12px;border-bottom:.5px solid rgba(186,117,23,.2);font-size:11px;font-weight:700;color:var(--amber);display:flex;align-items:center;justify-content:space-between;}
+  .snapshot-content{padding:12px;font-size:12px;line-height:1.8;color:var(--text2);font-family:ui-monospace,monospace;background:var(--bg2);white-space:pre-wrap;max-height:280px;overflow-y:auto;}
+  .snap-copy-btn{font-size:11px;color:var(--amber);background:none;border:.5px solid rgba(186,117,23,.4);border-radius:5px;padding:2px 9px;cursor:pointer;}
+  .snap-copy-btn:hover{background:white;}
 
   @media(max-width:560px){
     .controls-row{grid-template-columns:1fr;}
@@ -115,6 +126,12 @@
 
 <!-- Controls -->
 <div class="section-label">Trip setup</div>
+<div class="controls-row">
+  <div class="field" style="grid-column:span 2;">
+    <div class="field-label">Trip name (for snapshot)</div>
+    <input type="text" id="trip-name" placeholder="e.g. Kyoto & Osaka 2026">
+  </div>
+</div>
 <div class="controls-row">
   <div class="field">
     <div class="field-label">Currency</div>
@@ -154,6 +171,7 @@
 <div class="divider"></div>
 
 <!-- Expenses -->
+<div class="autosave-bar"><div class="save-dot"></div><span id="autosave-status">Data saves automatically in your browser — use Save Snapshot at the end of your trip to keep a permanent record.</span></div>
 <div class="section-label">Expenses</div>
 <div class="exp-wrap">
   <div class="exp-header" id="exp-header">
@@ -172,6 +190,11 @@
   <div class="card"><div class="card-head">Per person breakdown</div><div class="card-body" id="person-breakdown"></div></div>
   <div class="settlement-box"><div class="settlement-title">Who pays who</div><div id="settlement-items"></div></div>
   <div class="card"><div class="card-head">Spending by category</div><div class="card-body" id="cat-list"></div></div>
+  <button class="snapshot-btn" id="snapshot-btn" onclick="saveSnapshot()">📋 Save snapshot — copy full trip summary</button>
+  <div class="snapshot-box" id="snapshot-box">
+    <div class="snapshot-head"><span>📋 Trip snapshot — copy and save anywhere</span><button class="snap-copy-btn" onclick="copySnapshot()">Copy</button></div>
+    <div class="snapshot-content" id="snapshot-content"></div>
+  </div>
   <button class="reset-btn" onclick="resetAll()">↺ Start over</button>
 </div>
 
@@ -356,6 +379,164 @@ function resetAll(){
   clearError();
 }
 
+// ── localStorage persistence ──────────────────────────────
+const STORAGE_KEY = 'bonvoyage_expenses_v1';
+
+function saveToStorage() {
+  try {
+    const travelers = [...document.querySelectorAll('.t-row')].map(r => ({
+      name: r.querySelector('input').value,
+      color: r.querySelectorAll('select')[0].value
+    }));
+    const expenses = [...document.querySelectorAll('.exp-row')].map(r => {
+      const inputs = r.querySelectorAll('input');
+      const selects = r.querySelectorAll('select');
+      return {
+        desc: inputs[0].value, amount: inputs[1].value,
+        paidBy: selects[0].value, cat: selects[1].value,
+        split: inputs[2] ? inputs[2].value : '50'
+      };
+    });
+    const data = {
+      tripName: document.getElementById('trip-name').value,
+      currency: document.getElementById('currency').value,
+      splitType: document.getElementById('split-type').value,
+      travelers, expenses,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    document.getElementById('autosave-status').textContent = 'Autosaved · ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.tripName) document.getElementById('trip-name').value = data.tripName;
+    if (data.currency) document.getElementById('currency').value = data.currency;
+    if (data.splitType) document.getElementById('split-type').value = data.splitType;
+    // Load travelers
+    if (data.travelers && data.travelers.length) {
+      data.travelers.forEach(t => addTraveler(t.name, t.color));
+    }
+    // Load expenses
+    if (data.expenses && data.expenses.length) {
+      toggleSplitCols();
+      data.expenses.forEach(e => addExpense(e.desc, e.amount, e.paidBy, e.cat, e.split));
+    }
+    toggleSplitCols();
+    document.getElementById('autosave-status').textContent = 'Restored from last session · ' + new Date(data.savedAt).toLocaleDateString();
+    return true;
+  } catch(e) { return false; }
+}
+
+// Autosave on any input change
+document.addEventListener('input', () => setTimeout(saveToStorage, 500));
+document.addEventListener('change', () => setTimeout(saveToStorage, 500));
+
+// ── Snapshot export ────────────────────────────────────────
+function saveSnapshot() {
+  const btn = document.getElementById('snapshot-btn');
+  const travelers = getTravelerNames();
+  if (!travelers.length) { showError('Add travelers first.'); return; }
+
+  const isCustom = document.getElementById('split-type').value === 'custom';
+  const rows = document.querySelectorAll('.exp-row');
+  const expenses = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const selects = row.querySelectorAll('select');
+    const desc = inputs[0].value.trim();
+    const amount = parseFloat(inputs[1].value);
+    const paidBy = selects[0].value;
+    const cat = selects[1].value;
+    const splitPct = isCustom ? parseFloat(inputs[2].value)||50 : 50;
+    if (!desc || isNaN(amount) || amount <= 0) return;
+    expenses.push({desc, amount, paidBy, cat, splitPct});
+  });
+
+  if (!expenses.length) { showError('Add expenses first.'); return; }
+
+  const s = sym();
+  const n = travelers.length;
+  const total = expenses.reduce((a, e) => a + e.amount, 0);
+  const paid = {}, owes = {};
+  travelers.forEach(t => { paid[t] = 0; owes[t] = 0; });
+  expenses.forEach(e => {
+    paid[e.paidBy] = (paid[e.paidBy]||0) + e.amount;
+    if (isCustom) {
+      const payerShare = e.amount * (e.splitPct/100);
+      const othersShare = (e.amount - payerShare) / (n - 1);
+      travelers.forEach(t => owes[t] = (owes[t]||0) + (t === e.paidBy ? payerShare : othersShare));
+    } else {
+      travelers.forEach(t => owes[t] = (owes[t]||0) + e.amount / n);
+    }
+  });
+  const balance = {};
+  travelers.forEach(t => balance[t] = (paid[t]||0) - (owes[t]||0));
+
+  const settlements = [];
+  const pos = travelers.filter(t => balance[t] > 0.005).map(t => ({name:t, amt:balance[t]}));
+  const neg = travelers.filter(t => balance[t] < -0.005).map(t => ({name:t, amt:-balance[t]}));
+  let i=0, j=0;
+  const pc=[...pos], nc=[...neg];
+  while(i<pc.length && j<nc.length) {
+    const tr = Math.min(pc[i].amt, nc[j].amt);
+    if (tr > 0.005) settlements.push({from:nc[j].name, to:pc[i].name, amount:tr});
+    pc[i].amt -= tr; nc[j].amt -= tr;
+    if (pc[i].amt < 0.005) i++; if (nc[j].amt < 0.005) j++;
+  }
+
+  const cats = {};
+  expenses.forEach(e => cats[e.cat] = (cats[e.cat]||0) + e.amount);
+
+  const tripName = document.getElementById('trip-name').value || 'Trip';
+  const date = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+
+  let snap = `BON VOYAGE — TRIP SUMMARY\n`;
+  snap += `${tripName}\n`;
+  snap += `Generated ${date}\n`;
+  snap += `${'─'.repeat(40)}\n\n`;
+  snap += `EXPENSES (${expenses.length} total)\n`;
+  expenses.forEach(e => snap += `${e.desc} — ${fmt(e.amount)} — ${e.paidBy} — ${e.cat}\n`);
+  snap += `\nTOTALS\n`;
+  snap += `Total spent: ${fmt(total)}\n`;
+  snap += `Per person: ${fmt(total/n)}\n`;
+  snap += `\nPER PERSON\n`;
+  travelers.forEach(t => snap += `${t}: paid ${fmt(paid[t]||0)} · share ${fmt(owes[t]||0)} · ${balance[t]>0.005?'gets back '+fmt(balance[t]):balance[t]<-0.005?'owes '+fmt(Math.abs(balance[t])):'even'}\n`);
+  snap += `\nSETTLEMENT\n`;
+  if (settlements.length === 0) snap += `Everyone is even — no transfers needed!\n`;
+  else settlements.forEach(s2 => snap += `${s2.from} → ${s2.to}: ${fmt(s2.amount)}\n`);
+  snap += `\nBY CATEGORY\n`;
+  Object.entries(cats).sort((a,b)=>b[1]-a[1]).forEach(([c,a]) => snap += `${c}: ${fmt(a)}\n`);
+  snap += `\n${'─'.repeat(40)}\n`;
+  snap += `Bon Voyage · Plan it together. Remember it forever.`;
+
+  document.getElementById('snapshot-content').textContent = snap;
+  document.getElementById('snapshot-box').classList.add('visible');
+
+  navigator.clipboard.writeText(snap).then(() => {
+    btn.textContent = '✅ Copied! Paste into Notion or send to your group';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Save snapshot — copy full trip summary';
+      btn.classList.remove('copied');
+    }, 3000);
+  }).catch(() => {});
+}
+
+function copySnapshot() {
+  const text = document.getElementById('snapshot-content').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.snap-copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────
 // Init
 addTraveler('Marie-Lou');
 addTraveler('Jean-Félix');
