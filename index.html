@@ -33,9 +33,9 @@
 
   /* Travelers */
   .travelers-wrap{border:.5px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:10px;}
-  .t-header{display:grid;grid-template-columns:1fr 100px 32px;gap:6px;padding:7px 10px;background:var(--bg2);border-bottom:.5px solid var(--border);}
+  .t-header{display:grid;grid-template-columns:1fr 32px;gap:6px;padding:7px 10px;background:var(--bg2);border-bottom:.5px solid var(--border);}
   .t-header span{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
-  .t-row{display:grid;grid-template-columns:1fr 100px 32px;gap:6px;padding:7px 10px;border-bottom:.5px solid var(--border);align-items:center;}
+  .t-row{display:grid;grid-template-columns:1fr 32px;gap:6px;padding:7px 10px;border-bottom:.5px solid var(--border);align-items:center;}
   .t-row:last-child{border-bottom:none;}
   .del-btn{width:28px;height:28px;border-radius:5px;border:.5px solid var(--border);background:var(--bg2);color:var(--text3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
   .del-btn:hover{background:var(--red-bg);color:var(--red);border-color:var(--red);}
@@ -163,7 +163,7 @@
 <!-- Travelers -->
 <div class="section-label">Travelers</div>
 <div class="travelers-wrap">
-  <div class="t-header"><span>Name</span><span>Color</span><span></span></div>
+  <div class="t-header"><span>Name</span><span></span></div>
   <div id="traveler-list"></div>
 </div>
 <button class="add-btn" onclick="addTraveler()">+ Add traveler</button>
@@ -201,7 +201,6 @@
 <div class="footer">Bon Voyage · Plan it together. Remember it forever.</div>
 
 <script>
-const COLORS = ['🟣','🟢','🔵','🟡','🟠','🔴','🟤','⚪'];
 const CATS = ['🚇 Transport','🏨 Lodging','🍜 Food','🎟 Activities','🛍 Shopping','🏥 Health','📦 Misc'];
 let tCount=0, eCount=0;
 
@@ -222,15 +221,13 @@ function refreshPaidBySelects(){
   });
 }
 
-function addTraveler(name='',color=''){
+function addTraveler(name=''){
   tCount++;
   const id=tCount;
-  const colorVal=color||COLORS[(tCount-1)%COLORS.length];
   const div=document.createElement('div');
   div.className='t-row'; div.dataset.id=id;
   div.innerHTML=`
     <input type="text" placeholder="e.g. Marie-Lou" value="${name}" oninput="refreshPaidBySelects();clearError()">
-    <select onchange="clearError()">${COLORS.map(c=>`<option${c===colorVal?' selected':''}>${c}</option>`).join('')}</select>
     <button class="del-btn" onclick="removeTraveler(${id})">×</button>`;
   document.getElementById('traveler-list').appendChild(div);
   refreshPaidBySelects();
@@ -385,8 +382,7 @@ const STORAGE_KEY = 'bonvoyage_expenses_v1';
 function saveToStorage() {
   try {
     const travelers = [...document.querySelectorAll('.t-row')].map(r => ({
-      name: r.querySelector('input').value,
-      color: r.querySelectorAll('select')[0].value
+      name: r.querySelector('input').value
     }));
     const expenses = [...document.querySelectorAll('.exp-row')].map(r => {
       const inputs = r.querySelectorAll('input');
@@ -419,7 +415,7 @@ function loadFromStorage() {
     if (data.splitType) document.getElementById('split-type').value = data.splitType;
     // Load travelers
     if (data.travelers && data.travelers.length) {
-      data.travelers.forEach(t => addTraveler(t.name, t.color));
+      data.travelers.forEach(t => addTraveler(t.name));
     }
     // Load expenses
     if (data.expenses && data.expenses.length) {
