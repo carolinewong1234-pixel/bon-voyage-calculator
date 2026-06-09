@@ -4,288 +4,315 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bon Voyage — Settlement Calculator</title>
-
 <style>
   :root {
-    --bg: #ffffff;
-    --bg2: #f7f6f3;
-    --bg3: #f1f1ef;
-    --border: #e8e6e1;
-    --text: #37352f;
-    --text2: #787774;
-    --text3: #9b9a97;
-    --gold: #b8860b;
-    --purple: #7F77DD;
-    --purple-bg: #EEEDFE;
-    --purple-text: #3C3489;
-    --green: #1D9E75;
-    --green-bg: #EAF3DE;
-    --green-text: #27500A;
-    --red: #E24B4A;
-    --red-bg: #FCEBEB;
-    --red-text: #A32D2D;
-    --amber: #BA7517;
-    --amber-bg: #FAEEDA;
+    --bg: #ffffff; --bg2: #f7f6f3; --bg3: #f1f1ef;
+    --border: #e8e6e1; --text: #37352f; --text2: #787774; --text3: #9b9a97;
+    --purple: #7F77DD; --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --green: #1D9E75; --green-bg: #EAF3DE; --green-text: #085041;
+    --red: #A32D2D; --red-bg: #FCEBEB;
+    --amber: #BA7517; --amber-bg: #FAEEDA;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 24px 20px 40px;
-    font-size: 14px;
+    background: var(--bg); color: var(--text);
+    padding: 24px 20px 48px; font-size: 14px;
+    max-width: 680px; margin: 0 auto;
   }
-
-  .header { margin-bottom: 20px; }
   .brand { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
-  .title {  font-size: 24px; color: var(--text); margin-bottom: 4px; }
-  .subtitle { font-size: 13px; color: var(--text2); line-height: 1.5; }
-  .divider { height: 0.5px; background: var(--border); margin: 16px 0; }
+  .title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
+  .divider { height: 0.5px; background: var(--border); margin: 14px 0; }
+  .section-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
 
-  .section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+  .tip { background: var(--amber-bg); border-left: 3px solid var(--amber); border-radius: 0 6px 6px 0; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; color: var(--text); line-height: 1.6; }
+  .tip strong { font-weight: 600; color: var(--amber); }
 
-  .travelers-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-  .field-wrap { }
-  .field-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
-
-  input[type=text], input[type=number], select {
-    width: 100%;
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
-    font-size: 13px;
-    padding: 7px 10px;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+  /* Traveler rows */
+  .travelers-wrap { border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+  .traveler-header { display: grid; grid-template-columns: 1fr 140px 32px; gap: 8px; padding: 8px 12px; background: var(--bg2); border-bottom: 0.5px solid var(--border); }
+  .traveler-header span { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+  .traveler-row { display: grid; grid-template-columns: 1fr 140px 32px; gap: 8px; padding: 8px 12px; border-bottom: 0.5px solid var(--border); align-items: center; }
+  .traveler-row:last-child { border-bottom: none; }
+  input[type=text], input[type=number] {
+    width: 100%; background: white; border: 0.5px solid var(--border);
+    border-radius: 6px; color: var(--text); font-family: inherit;
+    font-size: 13px; padding: 7px 10px; outline: none; transition: border-color 0.15s;
   }
-  input:focus, select:focus {
-    border-color: var(--purple);
-    box-shadow: 0 0 0 2px rgba(127,119,221,0.12);
-  }
+  input:focus { border-color: var(--purple); box-shadow: 0 0 0 2px rgba(127,119,221,0.1); }
   input::placeholder { color: var(--text3); }
-  select { cursor: pointer; }
-
-  .expense-header { display: grid; grid-template-columns: 2fr 90px 1fr 1fr 28px; gap: 6px; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 0.5px solid var(--border); }
-  .expense-header span { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
-  .expense-row { display: grid; grid-template-columns: 2fr 90px 1fr 1fr 28px; gap: 6px; margin-bottom: 6px; align-items: center; }
-
-  .del-btn {
-    width: 28px; height: 28px; border-radius: 5px; border: 0.5px solid var(--border);
-    background: var(--bg2); color: var(--text3); font-size: 14px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0;
-  }
+  .del-btn { width: 32px; height: 32px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--bg2); color: var(--text3); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
   .del-btn:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
 
-  .add-btn {
-    font-size: 12px; font-weight: 500; color: var(--green); background: var(--green-bg);
-    border: 0.5px solid #c8e0b8; border-radius: 6px; padding: 6px 14px;
-    cursor: pointer; transition: all 0.15s; margin-top: 8px; display: inline-block;
-  }
-  .add-btn:hover { border-color: var(--green); }
+  .add-traveler-btn { width: 100%; padding: 9px; background: none; border: 0.5px dashed var(--border); border-radius: 8px; color: var(--text2); font-family: inherit; font-size: 13px; cursor: pointer; transition: all 0.15s; margin-bottom: 14px; }
+  .add-traveler-btn:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-bg); }
 
-  .calc-btn {
-    width: 100%; padding: 11px; margin: 18px 0 0;
-    background: var(--purple);
-    border: none; border-radius: 8px; color: white;
-    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif; font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s;
-  }
+  /* Currency selector */
+  .currency-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .currency-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+  select { background: white; border: 0.5px solid var(--border); border-radius: 6px; color: var(--text); font-family: inherit; font-size: 13px; padding: 7px 28px 7px 10px; outline: none; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23787774' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; }
+  select:focus { border-color: var(--purple); outline: none; }
+
+  /* Calculate button */
+  .calc-btn { width: 100%; padding: 12px; background: var(--purple); border: none; border-radius: 8px; color: white; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; margin-bottom: 16px; }
   .calc-btn:hover { background: #6b63c4; }
 
-  .result { display: none; margin-top: 20px; }
+  /* Results */
+  .result { display: none; }
   .result.visible { display: block; }
 
-  .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
-  .stat-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .stat { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
   .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; font-weight: 500; }
-  .stat-value {  font-size: 22px; color: var(--text); }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--text); }
 
-  .card { border: 0.5px solid var(--border); border-radius: 8px; padding: 0 14px; margin-bottom: 12px; }
+  .card { border: 0.5px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+  .card-head { background: var(--bg2); padding: 8px 14px; border-bottom: 0.5px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
+  .card-body { padding: 0 14px; }
+
   .person-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
   .person-row:last-child { border-bottom: none; }
-  .person-name { font-size: 13px; font-weight: 600; color: var(--text); }
-  .person-detail { font-size: 11px; color: var(--text3); margin-top: 1px; }
-  .balance-tag { font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+  .person-name { font-size: 13px; font-weight: 600; }
+  .person-detail { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .balance-tag { font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
   .balance-pos { background: var(--green-bg); color: var(--green-text); }
-  .balance-neg { background: var(--red-bg); color: var(--red-text); }
+  .balance-neg { background: var(--red-bg); color: var(--red); }
   .balance-zero { background: var(--bg2); color: var(--text3); }
 
-  .settlement-box { background: var(--purple-bg); border: 0.5px solid rgba(127,119,221,0.3); border-radius: 8px; padding: 14px; margin: 12px 0; }
-  .settlement-title { font-size: 11px; font-weight: 600; color: var(--purple-text); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
-  .settlement-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; }
+  .settlement-box { background: var(--purple-bg); border: 0.5px solid rgba(127,119,221,0.3); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+  .settlement-title { font-size: 11px; font-weight: 700; color: var(--purple-text); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+  .settlement-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
   .settlement-item:last-child { margin-bottom: 0; }
-  .s-from, .s-to { font-weight: 600; color: var(--text); }
+  .s-from, .s-to { font-weight: 600; }
   .s-arrow { color: var(--text3); }
-  .s-amount { background: var(--purple); color: white; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: auto; }
+  .s-amount { background: var(--purple); color: white; padding: 3px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-left: auto; }
   .even-msg { font-size: 13px; color: var(--green-text); font-weight: 500; }
 
-  .cat-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
-  .cat-row:last-child { border-bottom: none; }
-  .cat-name { font-size: 12px; flex: 1; color: var(--text); }
-  .cat-bar-bg { width: 70px; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
-  .cat-bar-fill { height: 100%; border-radius: 2px; background: var(--purple); }
-  .cat-amount { font-size: 12px; font-weight: 600; color: var(--text); min-width: 50px; text-align: right; }
+  .error-box { background: var(--red-bg); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--red); margin-bottom: 12px; display: none; }
+  .error-box.visible { display: block; }
+
+  .reset-btn { width: 100%; padding: 9px; background: none; border: 0.5px solid var(--border); border-radius: 8px; color: var(--text2); font-family: inherit; font-size: 13px; cursor: pointer; margin-top: 4px; }
+  .reset-btn:hover { border-color: var(--text2); }
 
   .footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--text3); }
 
-  @media (max-width: 480px) {
-    .travelers-grid { grid-template-columns: 1fr 1fr; }
-    .expense-header, .expense-row { grid-template-columns: 1.5fr 80px 1fr 28px; }
-    .expense-header span:nth-child(4), .expense-row select:last-of-type { display: none; }
+  @media(max-width:480px) {
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .stat-grid .stat:last-child { grid-column: span 2; }
+    .traveler-header, .traveler-row { grid-template-columns: 1fr 110px 32px; }
   }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="brand">Bon Voyage</div>
-  <h1 class="title">Settlement Calculator</h1>
-  <p class="subtitle">Log expenses below — instantly see who owes who. No math required.</p>
-</div>
-<div class="divider"></div>
+<div class="brand">Bon Voyage · Settlement Calculator</div>
+<h1 class="title">⚖️ Who owes who?</h1>
+<p class="subtitle">Enter each traveler's name and how much they paid in total. The calculator works out the settlement instantly.</p>
 
-<div class="section-label">Travelers</div>
-<div class="travelers-grid">
-  <div class="field-wrap"><div class="field-label">Traveler 1</div><input type="text" id="t1" value="Marie-Lou" placeholder="Name"></div>
-  <div class="field-wrap"><div class="field-label">Traveler 2</div><input type="text" id="t2" value="Jean-Félix" placeholder="Name"></div>
-  <div class="field-wrap"><div class="field-label">Traveler 3 (optional)</div><input type="text" id="t3" value="" placeholder="Name"></div>
+<div class="tip">
+  <strong>How to use:</strong> Open the Expenses database in Notion → look at the <strong>Sum row</strong> at the bottom of the Amount column → find each person's total → enter it below.
 </div>
 
 <div class="divider"></div>
-<div class="section-label">Expenses</div>
-<div class="expense-header">
-  <span>Description</span><span>Amount $</span><span>Paid by</span><span>Category</span><span></span>
-</div>
-<div id="expense-list"></div>
-<button class="add-btn" onclick="addRow()">+ Add expense</button>
 
-<button class="calc-btn" onclick="calculate()">⚡ Calculate settlement</button>
+<div class="section-label">Currency</div>
+<div class="currency-row">
+  <span class="currency-label">Select your currency:</span>
+  <select id="currency">
+    <option value="$" data-code="USD">$ — US Dollar</option>
+    <option value="CA$" data-code="CAD" selected>CA$ — Canadian Dollar</option>
+    <option value="£" data-code="GBP">£ — British Pound</option>
+    <option value="€" data-code="EUR">€ — Euro</option>
+    <option value="A$" data-code="AUD">A$ — Australian Dollar</option>
+    <option value="¥" data-code="JPY">¥ — Japanese Yen</option>
+    <option value="CHF" data-code="CHF">CHF — Swiss Franc</option>
+    <option value="NZ$" data-code="NZD">NZ$ — New Zealand Dollar</option>
+    <option value="kr" data-code="SEK">kr — Swedish Krona</option>
+    <option value="R" data-code="ZAR">R — South African Rand</option>
+    <option value="R$" data-code="BRL">R$ — Brazilian Real</option>
+    <option value="₹" data-code="INR">₹ — Indian Rupee</option>
+    <option value="₩" data-code="KRW">₩ — South Korean Won</option>
+    <option value="¥" data-code="CNY">¥ — Chinese Yuan</option>
+  </select>
+</div>
+
+<div class="divider"></div>
+
+<div class="section-label">Travelers & amounts paid</div>
+<div class="travelers-wrap">
+  <div class="traveler-header">
+    <span>Traveler name</span>
+    <span>Total paid</span>
+    <span></span>
+  </div>
+  <div id="traveler-list"></div>
+</div>
+<button class="add-traveler-btn" onclick="addTraveler()">+ Add traveler</button>
+
+<div class="error-box" id="error"></div>
+
+<button class="calc-btn" onclick="calculate()">⚖️ Calculate settlement</button>
 
 <div class="result" id="result">
-  <div class="divider"></div>
-  <div class="section-label">Summary</div>
   <div class="stat-grid" id="stat-grid"></div>
 
-  <div class="section-label">Per person</div>
-  <div class="card"><div id="person-breakdown"></div></div>
+  <div class="card">
+    <div class="card-head">Per person breakdown</div>
+    <div class="card-body" id="person-breakdown"></div>
+  </div>
 
   <div class="settlement-box">
-    <div class="settlement-title">Who pays who</div>
+    <div class="settlement-title">💸 Who pays who</div>
     <div id="settlement-items"></div>
   </div>
 
-  <div class="section-label">By category</div>
-  <div class="card"><div id="category-list"></div></div>
+  <button class="reset-btn" onclick="reset()">↺ Start over</button>
 </div>
 
 <div class="footer">Bon Voyage · Plan it together. Remember it forever.</div>
 
 <script>
-let rowId=1;
-const categories=['🚇 Transport','🏨 Lodging','🍜 Food','🎟 Activities','🛍 Shopping','🏥 Health','📦 Misc'];
-const sampleData=[
-  {name:'✈️ Flights YUL→KIX',amount:660,paidBy:'Marie-Lou',cat:'🚇 Transport'},
-  {name:'🏨 Airbnb Kyoto',amount:270,paidBy:'Jean-Félix',cat:'🏨 Lodging'},
-  {name:'🍜 Nishiki Market',amount:42,paidBy:'Marie-Lou',cat:'🍜 Food'},
-  {name:'🎟 TeamLab Planets',amount:64,paidBy:'Marie-Lou',cat:'🎟 Activities'},
-];
+let travelerCount = 0;
 
-function getTravelers(){
-  return ['t1','t2','t3'].map(id=>document.getElementById(id).value.trim()).filter(t=>t);
+function getCurrency() {
+  const sel = document.getElementById('currency');
+  return sel.options[sel.selectedIndex].value;
 }
 
-function addRow(data={}){
-  const travelers=getTravelers();
-  const div=document.createElement('div');
-  div.className='expense-row'; div.dataset.id=rowId++;
-  div.innerHTML=`
-    <input type="text" placeholder="e.g. 🍜 Dinner" value="${data.name||''}">
-    <input type="number" placeholder="0.00" value="${data.amount||''}" min="0" step="0.01">
-    <select>${travelers.map(t=>`<option${t===(data.paidBy||travelers[0])?' selected':''}>${t}</option>`).join('')}</select>
-    <select>${categories.map(c=>`<option${c===(data.cat||categories[0])?' selected':''}>${c}</option>`).join('')}</select>
-    <button class="del-btn" onclick="if(document.querySelectorAll('.expense-row').length>1)this.closest('.expense-row').remove()">×</button>`;
-  document.getElementById('expense-list').appendChild(div);
+function fmt(amount) {
+  const sym = getCurrency();
+  const rounded = Math.round(amount * 100) / 100;
+  // Currencies without decimals
+  if (['¥', '₩'].includes(sym)) return sym + Math.round(amount).toLocaleString();
+  return sym + rounded.toFixed(2);
 }
 
-function updateSelects(){
-  const travelers=getTravelers();
-  document.querySelectorAll('#expense-list .expense-row').forEach(row=>{
-    const sel=row.querySelectorAll('select')[0];
-    const cur=sel.value;
-    sel.innerHTML=travelers.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('');
+function addTraveler(name = '', amount = '') {
+  travelerCount++;
+  const id = travelerCount;
+  const div = document.createElement('div');
+  div.className = 'traveler-row';
+  div.dataset.id = id;
+  div.innerHTML = `
+    <input type="text" placeholder="e.g. Marie-Lou" value="${name}" oninput="clearError()">
+    <input type="number" placeholder="${getCurrency()}0.00" value="${amount}" min="0" step="0.01" oninput="clearError()">
+    <button class="del-btn" onclick="removeTraveler(${id})" title="Remove">×</button>`;
+  document.getElementById('traveler-list').appendChild(div);
+}
+
+function removeTraveler(id) {
+  const rows = document.querySelectorAll('.traveler-row');
+  if (rows.length <= 2) {
+    showError('You need at least 2 travelers to calculate a settlement.');
+    return;
+  }
+  document.querySelector(`.traveler-row[data-id="${id}"]`).remove();
+}
+
+function getTravelers() {
+  const rows = document.querySelectorAll('.traveler-row');
+  const travelers = [];
+  let valid = true;
+  rows.forEach(row => {
+    const name = row.querySelectorAll('input')[0].value.trim();
+    const amount = parseFloat(row.querySelectorAll('input')[1].value);
+    if (!name || isNaN(amount) || amount < 0) { valid = false; return; }
+    travelers.push({ name, amount });
   });
+  return valid ? travelers : null;
 }
-['t1','t2','t3'].forEach(id=>document.getElementById(id).addEventListener('input',updateSelects));
 
-function calculate(){
-  const travelers=getTravelers();
-  if(travelers.length<2){alert('Please enter at least 2 traveler names.');return;}
-  const rows=document.querySelectorAll('#expense-list .expense-row');
-  const expenses=[];
-  rows.forEach(row=>{
-    const inp=row.querySelectorAll('input');
-    const sel=row.querySelectorAll('select');
-    const name=inp[0].value.trim();
-    const amount=parseFloat(inp[1].value);
-    if(!name||isNaN(amount)||amount<=0)return;
-    expenses.push({name,amount,paidBy:sel[0].value,category:sel[1].value});
-  });
-  if(!expenses.length){alert('Please add at least one expense.');return;}
-
-  const n=travelers.length;
-  const total=expenses.reduce((s,e)=>s+e.amount,0);
-  const share=total/n;
-  const paid={};
-  travelers.forEach(t=>paid[t]=0);
-  expenses.forEach(e=>{paid[e.paidBy]=(paid[e.paidBy]||0)+e.amount;});
-  const balance={};
-  travelers.forEach(t=>{balance[t]=(paid[t]||0)-share;});
-
-  const settlements=[];
-  const pos=travelers.filter(t=>balance[t]>0.005).map(t=>({name:t,amt:balance[t]}));
-  const neg=travelers.filter(t=>balance[t]<-0.005).map(t=>({name:t,amt:-balance[t]}));
-  let i=0,j=0;
-  while(i<pos.length&&j<neg.length){
-    const tr=Math.min(pos[i].amt,neg[j].amt);
-    if(tr>0.005)settlements.push({from:neg[j].name,to:pos[i].name,amount:tr});
-    pos[i].amt-=tr;neg[j].amt-=tr;
-    if(pos[i].amt<0.005)i++;if(neg[j].amt<0.005)j++;
+function calculate() {
+  clearError();
+  const travelers = getTravelers();
+  if (!travelers) {
+    showError('Please fill in all traveler names and amounts paid.');
+    return;
+  }
+  if (travelers.length < 2) {
+    showError('Please add at least 2 travelers.');
+    return;
   }
 
-  const cats={};
-  expenses.forEach(e=>{cats[e.category]=(cats[e.category]||0)+e.amount;});
-  const maxCat=Math.max(...Object.values(cats));
+  const total = travelers.reduce((s, t) => s + t.amount, 0);
+  const share = total / travelers.length;
 
-  document.getElementById('stat-grid').innerHTML=`
-    <div class="stat-box"><div class="stat-label">Total spent</div><div class="stat-value">$${total.toFixed(2)}</div></div>
-    <div class="stat-box"><div class="stat-label">Per person</div><div class="stat-value">$${share.toFixed(2)}</div></div>
-    <div class="stat-box"><div class="stat-label">Transfers</div><div class="stat-value">${settlements.length}</div></div>`;
+  // Net balance per person
+  travelers.forEach(t => { t.balance = t.amount - share; });
 
-  document.getElementById('person-breakdown').innerHTML=travelers.map(t=>{
-    const b=balance[t];
-    const cls=b>0.005?'balance-pos':b<-0.005?'balance-neg':'balance-zero';
-    const label=b>0.005?`Gets back $${b.toFixed(2)}`:b<-0.005?`Owes $${Math.abs(b).toFixed(2)}`:'Even ✓';
+  // Calculate minimum transfers
+  const settlements = [];
+  const creditors = travelers.filter(t => t.balance > 0.005).map(t => ({ ...t }));
+  const debtors = travelers.filter(t => t.balance < -0.005).map(t => ({ ...t }));
+
+  let i = 0, j = 0;
+  while (i < creditors.length && j < debtors.length) {
+    const transfer = Math.min(creditors[i].balance, -debtors[j].balance);
+    if (transfer > 0.005) {
+      settlements.push({ from: debtors[j].name, to: creditors[i].name, amount: transfer });
+    }
+    creditors[i].balance -= transfer;
+    debtors[j].balance += transfer;
+    if (creditors[i].balance < 0.005) i++;
+    if (debtors[j].balance > -0.005) j++;
+  }
+
+  // Render stats
+  document.getElementById('stat-grid').innerHTML = `
+    <div class="stat"><div class="stat-label">Total spent</div><div class="stat-value">${fmt(total)}</div></div>
+    <div class="stat"><div class="stat-label">Per person</div><div class="stat-value">${fmt(share)}</div></div>
+    <div class="stat"><div class="stat-label">Transfers</div><div class="stat-value">${settlements.length}</div></div>`;
+
+  // Render per person
+  document.getElementById('person-breakdown').innerHTML = travelers.map(t => {
+    const b = t.balance;
+    const cls = b > 0.005 ? 'balance-pos' : b < -0.005 ? 'balance-neg' : 'balance-zero';
+    const label = b > 0.005 ? `Gets back ${fmt(b)}` : b < -0.005 ? `Owes ${fmt(Math.abs(b))}` : 'Even ✓';
     return `<div class="person-row">
-      <div><div class="person-name">${t}</div><div class="person-detail">Paid $${(paid[t]||0).toFixed(2)} · Share $${share.toFixed(2)}</div></div>
+      <div>
+        <div class="person-name">${t.name}</div>
+        <div class="person-detail">Paid ${fmt(t.amount)} · Share ${fmt(share)}</div>
+      </div>
       <div class="balance-tag ${cls}">${label}</div>
     </div>`;
   }).join('');
 
-  document.getElementById('settlement-items').innerHTML=settlements.length?
-    settlements.map(s=>`<div class="settlement-item"><span class="s-from">${s.from}</span><span class="s-arrow">→</span><span class="s-to">${s.to}</span><span class="s-amount">$${s.amount.toFixed(2)}</span></div>`).join(''):
-    '<div class="even-msg">✅ Everyone is even — no transfers needed!</div>';
-
-  document.getElementById('category-list').innerHTML=Object.entries(cats)
-    .sort((a,b)=>b[1]-a[1])
-    .map(([cat,amt])=>`<div class="cat-row"><span class="cat-name">${cat}</span><div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${(amt/maxCat*100).toFixed(0)}%"></div></div><span class="cat-amount">$${amt.toFixed(2)}</span></div>`).join('');
+  // Render settlements
+  document.getElementById('settlement-items').innerHTML = settlements.length === 0
+    ? '<div class="even-msg">✅ Everyone is even — no transfers needed!</div>'
+    : settlements.map(s => `
+      <div class="settlement-item">
+        <span class="s-from">${s.from}</span>
+        <span class="s-arrow">→</span>
+        <span class="s-to">${s.to}</span>
+        <span class="s-amount">${fmt(s.amount)}</span>
+      </div>`).join('');
 
   document.getElementById('result').classList.add('visible');
-  document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-sampleData.forEach(d=>addRow(d));
+function reset() {
+  document.getElementById('result').classList.remove('visible');
+  document.getElementById('traveler-list').innerHTML = '';
+  travelerCount = 0;
+  addTraveler('Marie-Lou', '');
+  addTraveler('Jean-Félix', '');
+  clearError();
+}
+
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.textContent = msg; el.classList.add('visible');
+}
+function clearError() {
+  document.getElementById('error').classList.remove('visible');
+}
+
+// Init with 2 default travelers
+addTraveler('Marie-Lou', '');
+addTraveler('Jean-Félix', '');
 </script>
 </body>
 </html>
